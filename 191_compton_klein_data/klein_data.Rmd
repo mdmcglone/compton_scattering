@@ -1,0 +1,842 @@
+---
+title: "klein"
+author: "me"
+date: "11/7/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+compton shifts for each source = 2
+klein nishina for each source 
+
+
+
+```{r sc_background}
+sc_background <- read.csv("raw_data/AM241_emmy/nosource_7005s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(scounts = X.SPEC_ID.) %>% 
+  mutate(scounts = as.numeric(scounts)) %>% 
+  mutate(scounts = scounts/7005)
+
+```
+
+```{r cs_background}
+cs_back_10 <- read.csv("raw_data/CS137_emmy/background/CS137_background_10deg_0.56.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts10 = X.SPEC_ID.) %>% 
+  mutate(bcounts10 = as.numeric(bcounts10)) %>% 
+  mutate(bcounts10 = bcounts10/56)
+
+cs_back_30 <- read.csv("raw_data/CS137_emmy/background/CS137_background_30deg_3.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts30 = X.SPEC_ID.) %>% 
+  mutate(bcounts30 = as.numeric(bcounts30)) %>% 
+  mutate(bcounts30 = bcounts30/180)
+
+cs_back_60 <- read.csv("raw_data/CS137_emmy/background/CS137_background_60deg_18.20.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts60 = X.SPEC_ID.) %>% 
+  mutate(bcounts60 = as.numeric(bcounts60)) %>% 
+  mutate(bcounts60 = bcounts60/(18*60+20))
+
+cs_back_90 <- read.csv("raw_data/CS137_emmy/background/CS137_background_90deg_4.56.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts90 = X.SPEC_ID.) %>% 
+  mutate(bcounts90 = as.numeric(bcounts90)) %>% 
+  mutate(bcounts90 = bcounts90/(4*60+56))
+
+cs_back_120 <- read.csv("raw_data/CS137_emmy/background/CS137_background_120deg_3.16.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts120 = X.SPEC_ID.) %>% 
+  mutate(bcounts120 = as.numeric(bcounts120)) %>% 
+  mutate(bcounts120 = bcounts120/(3*60+16))
+
+cs_back_150 <- read.csv("raw_data/CS137_emmy/background/CS137_background_150deg_17.43.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts150 = X.SPEC_ID.) %>% 
+  mutate(bcounts150 = as.numeric(bcounts150)) %>% 
+  mutate(bcounts150 = bcounts150/(17*60+43))
+
+
+```
+
+
+```{r cs_copper}
+cs_cu_10 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_10deg_1.05.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts10 = X.SPEC_ID.) %>% 
+  mutate(counts10 = as.numeric(counts10)) %>% 
+  mutate(counts10 = counts10/65)
+
+cs_cu_30 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_30deg_3.03.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts30 = X.SPEC_ID.) %>% 
+  mutate(counts30 = as.numeric(counts30)) %>% 
+  mutate(counts30 = counts30/183)
+
+cs_cu_60 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_60deg_3.53.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts60 = X.SPEC_ID.) %>% 
+  mutate(counts60 = as.numeric(counts60)) %>% 
+  mutate(counts60 = counts60/(3*60+53))
+
+cs_cu_90 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_90deg_5.03.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts90 = X.SPEC_ID.) %>% 
+  mutate(counts90 = as.numeric(counts90)) %>% 
+  mutate(counts90 = counts90/(5*60+3))
+
+cs_cu_120 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_120deg_2.40.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts120 = X.SPEC_ID.) %>% 
+  mutate(counts120 = as.numeric(counts120)) %>% 
+  mutate(counts120 = counts120/(2*60+40))
+
+cs_cu_150 <- read.csv("raw_data/CS137_emmy/copper/CS137_CUcircle_150deg_5.46.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts150 = X.SPEC_ID.) %>% 
+  mutate(counts150 = as.numeric(counts150)) %>% 
+  mutate(counts150 = counts150/(5*60+46))
+
+```
+
+
+```{r cs_silver}
+cs_ag_10 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_10deg_3.20.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts10 = X.SPEC_ID.) %>% 
+  mutate(counts10 = as.numeric(counts10)) %>% 
+  mutate(counts10 = counts10/200)
+
+cs_ag_30 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_30deg_6.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts30 = X.SPEC_ID.) %>% 
+  mutate(counts30 = as.numeric(counts30)) %>% 
+  mutate(counts30 = counts30/360)
+
+cs_ag_60 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_60deg_11.30.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts60 = X.SPEC_ID.) %>% 
+  mutate(counts60 = as.numeric(counts60)) %>% 
+  mutate(counts60 = counts60/(11*60+30))
+
+cs_ag_90 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_90deg_9.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts90 = X.SPEC_ID.) %>% 
+  mutate(counts90 = as.numeric(counts90)) %>% 
+  mutate(counts90 = counts90/(9*60+0))
+
+cs_ag_120 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_120deg_17.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts120 = X.SPEC_ID.) %>% 
+  mutate(counts120 = as.numeric(counts120)) %>% 
+  mutate(counts120 = counts120/(17*60+0))
+
+cs_ag_150 <- read.csv("raw_data/CS137_emmy/silver/CS137_AGsquare_150deg_6.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts150 = X.SPEC_ID.) %>% 
+  mutate(counts150 = as.numeric(counts150)) %>% 
+  mutate(counts150 = counts150/(6*60+0))
+
+```
+
+
+```{r ag_background}
+am_back_10 <- read.csv("raw_data/AM241_emmy/background/AM241_background_10deg_12.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts10 = X.SPEC_ID.) %>% 
+  mutate(bcounts10 = as.numeric(bcounts10)) %>% 
+  mutate(bcounts10 = bcounts10/(12*60))
+
+am_back_30 <- read.csv("raw_data/AM241_emmy/background/AM241_background_30deg_1500s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts30 = X.SPEC_ID.) %>% 
+  mutate(bcounts30 = as.numeric(bcounts30)) %>% 
+  mutate(bcounts30 = bcounts30/1500)
+
+am_back_60 <- read.csv("raw_data/AM241_emmy/background/AM241_background_60deg_3700s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts60 = X.SPEC_ID.) %>% 
+  mutate(bcounts60 = as.numeric(bcounts60)) %>% 
+  mutate(bcounts60 = bcounts60/3700)
+
+am_back_90 <- read.csv("raw_data/AM241_emmy/background/AM241_background_90deg_2848s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts90 = X.SPEC_ID.) %>% 
+  mutate(bcounts90 = as.numeric(bcounts90)) %>% 
+  mutate(bcounts90 = bcounts90/2848)
+
+am_back_120 <- read.csv("raw_data/AM241_emmy/background/AM241_background_120deg_3402s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts120 = X.SPEC_ID.) %>% 
+  mutate(bcounts120 = as.numeric(bcounts120)) %>% 
+  mutate(bcounts120 = bcounts120/3402)
+
+am_back_150 <- read.csv("raw_data/AM241_emmy/background/AM241_background_150deg_2100s.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(bcounts150 = X.SPEC_ID.) %>% 
+  mutate(bcounts150 = as.numeric(bcounts150)) %>% 
+  mutate(bcounts150 = bcounts150/2100)
+
+```
+
+```{r am_carbon}
+am_c_10 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_10deg_6.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts10 = X.SPEC_ID.) %>% 
+  mutate(counts10 = as.numeric(counts10)) %>% 
+  mutate(counts10 = counts10/300)
+
+am_c_30 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_30deg_25.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts30 = X.SPEC_ID.) %>% 
+  mutate(counts30 = as.numeric(counts30)) %>% 
+  mutate(counts30 = counts30/(25*60))
+
+am_c_60 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_60deg_12.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts60 = X.SPEC_ID.) %>% 
+  mutate(counts60 = as.numeric(counts60)) %>% 
+  mutate(counts60 = counts60/(12*60+0))
+
+am_c_90 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_90deg_13.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts90 = X.SPEC_ID.) %>% 
+  mutate(counts90 = as.numeric(counts90)) %>% 
+  mutate(counts90 = counts90/(13*60+0))
+
+am_c_120 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_120deg_11.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts120 = X.SPEC_ID.) %>% 
+  mutate(counts120 = as.numeric(counts120)) %>% 
+  mutate(counts120 = counts120/(11*60+0))
+
+am_c_150 <- read.csv("raw_data/AM241_emmy/carbon/am241_Ccircle_150deg_11.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts150 = X.SPEC_ID.) %>% 
+  mutate(counts150 = as.numeric(counts150)) %>% 
+  mutate(counts150 = counts150/(11*60+0))
+
+```
+
+```{r am_aluminum}
+am_al_10 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_10deg_6.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts10 = X.SPEC_ID.) %>% 
+  mutate(counts10 = as.numeric(counts10)) %>% 
+  mutate(counts10 = counts10/300)
+
+am_al_30 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_30deg_10.30.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts30 = X.SPEC_ID.) %>% 
+  mutate(counts30 = as.numeric(counts30)) %>% 
+  mutate(counts30 = counts30/(10*60+30))
+
+am_al_60 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_60deg_10.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts60 = X.SPEC_ID.) %>% 
+  mutate(counts60 = as.numeric(counts60)) %>% 
+  mutate(counts60 = counts60/(10*60+0))
+
+am_al_90 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_90deg_32.30.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts90 = X.SPEC_ID.) %>% 
+  mutate(counts90 = as.numeric(counts90)) %>% 
+  mutate(counts90 = counts90/(32*60+30))
+
+am_al_120 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_120deg_23.30.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts120 = X.SPEC_ID.) %>% 
+  mutate(counts120 = as.numeric(counts120)) %>% 
+  mutate(counts120 = counts120/(23*60+30))
+
+am_al_150 <- read.csv("raw_data/AM241_emmy/aluminum/am241_ALsquare_150deg_14.40.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts150 = X.SPEC_ID.) %>% 
+  mutate(counts150 = as.numeric(counts150)) %>% 
+  mutate(counts150 = counts150/(14*60+40))
+
+```
+
+```{r am_silver}
+am_ag_10 <- read.csv("raw_data/AM241_emmy/silver/AM241_AGsquare_10deg_30.00.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts10 = X.SPEC_ID.) %>% 
+  mutate(counts10 = as.numeric(counts10)) %>% 
+  mutate(counts10 = counts10/(30*60))
+
+am_ag_30 <- read.csv("raw_data/AM241_emmy/silver/AM241_AGsquare_30deg_2500.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts30 = X.SPEC_ID.) %>% 
+  mutate(counts30 = as.numeric(counts30)) %>% 
+  mutate(counts30 = counts30/2500)
+
+am_ag_60 <- read.csv("raw_data/AM241_emmy/silver/AM241_AGsquare_60deg_2661.csv") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts60 = X.SPEC_ID.) %>% 
+  mutate(counts60 = as.numeric(counts60)) %>% 
+  mutate(counts60 = counts60/2661)
+
+am_ag_90 <- read.csv("raw_data/AM241_emmy/silver/AM241_AGsquare_90deg_950.Spe.csv", fileEncoding="UTF-8-BOM") %>% 
+  tail(1038) %>% 
+  head(1024) %>% 
+  rename(counts90 = X.SPEC_ID.) %>% 
+  mutate(counts90 = as.numeric(counts90)) %>% 
+  mutate(counts90 = counts90/950)
+
+```
+ 
+ 
+ 
+#graph compton shifts 
+```{r cs_cu_compton_shift}
+
+cs_cu <- tibble(source = c(cs_cu_10,cs_cu_30,cs_cu_60,cs_cu_90,cs_cu_120,cs_cu_150), 
+                background = c(cs_back_10 + sc_background, cs_back_30 + sc_background, cs_back_90 + sc_background,
+                               cs_back_90 + sc_background, cs_back_120 + sc_background, cs_back_150 + sc_background),
+                exp_shift = c(836.4863,726.5168,517.0535,370.9558,289.2312, 249.0631))
+
+
+ for (i in 1:6){
+ norm <- cs_cu$source[[i]] - cs_cu$background[[i]]
+dog <-tibble(nums = seq(1,1024,1)*1.87/853, norm ) %>% 
+ggplot(aes(x = nums, y = norm)) +
+geom_point() + 
+        theme_classic() +
+theme(aspect.ratio=1) +
+geom_vline(xintercept = cs_cu$exp_shift[i]*1.87/853, color = 'blue', alpha = .5) +
+  xlim((cs_cu$exp_shift[i] - 100)*1.87/853, (cs_cu$exp_shift[i]+ 100)*1.87/853) +
+  labs(title = 'Compton Shift of Cesium Source',
+       subtitle = 'Using copper target at 150 degrees',
+       y = 'Counts per second',
+       x = 'Wavelength (pm)') 
+print(dog)
+ }
+
+
+
+
+```
+
+
+```{r cs_ag_compton_shift}
+#rubbish
+
+#10 degrees
+cs_ag_10norm <- cs_ag_10 - cs_back_10 - sc_background
+ggplot(cs_ag_10norm, aes(x = nums, y = counts10)) +
+  geom_point() + 
+  theme(aspect.ratio=1) +
+  geom_vline(xintercept = 836.4863)
+
+#30 degrees
+cs_ag_30norm <- cs_ag_30 - cs_back_30 - sc_background
+ggplot(cs_ag_30norm, aes(x = nums, y = counts30)) +
+  geom_point()+ 
+  theme(aspect.ratio=1) +
+  geom_vline(xintercept = 726.5168	)
+
+#60 degrees
+cs_ag_60norm <- cs_ag_60 - cs_back_60 - sc_background
+ggplot(cs_ag_60norm, aes(x = nums, y = counts60)) +
+  geom_point()+   
+  theme(aspect.ratio=1) +
+  geom_vline(xintercept = 517.0535)
+
+#90 degrees
+cs_ag_90norm <- cs_ag_90 - cs_back_90 - sc_background
+ggplot(cs_ag_90norm, aes(x = nums, y = counts90)) +
+  geom_point()+ 
+theme(aspect.ratio=1) +
+    geom_vline(xintercept = 370.9558	)
+
+#120 degrees
+cs_ag_120norm <- cs_ag_120 - cs_back_120 - sc_background
+ggplot(cs_ag_120norm, aes(x = nums, y = counts120)) +
+  geom_point()+ 
+theme(aspect.ratio=1) +
+   geom_vline(xintercept = 289.2312	)
+
+
+#150 degrees
+cs_ag_150norm <- cs_ag_150 - cs_back_150 - sc_background
+ggplot(cs_ag_150norm, aes(x = nums, y = counts150)) +
+  geom_point()+ 
+theme(aspect.ratio=1) +
+     geom_vline(xintercept = 249.0631	)
+
+
+view(cs_ag_30norm)
+view(cs_ag_60norm)
+view(cs_ag_90norm)
+view(cs_ag_120norm)
+view(cs_ag_150norm)
+
+
+```
+
+
+
+```{r am_al_compton_shift}
+nums <- seq(1,1024,1)
+
+am_al <- tibble(source = c(am_al_10,am_al_30,am_al_60,am_al_90,am_al_120,am_al_150), 
+                background = c(am_back_10 + sc_background, am_back_30 + sc_background, am_back_90 + sc_background,
+                               am_back_90 + sc_background, am_back_120 + sc_background, am_back_150 + sc_background),
+                exp_shift = c(943.3257	,930.4369,892.8458	,846.1472,804.0908	, 775.8608	))
+
+
+ 
+
+# 
+# #10 degrees
+# am_al_10norm <- am_al_10 - am_back_10 - sc_background
+# ggplot(am_al_10norm, aes(x = nums, y = counts10)) +
+#   geom_point() + 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #30 degrees
+# am_al_30norm <- am_al_30 - am_back_30 - sc_background
+# ggplot(am_al_30norm, aes(x = nums, y = counts30)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #60 degrees
+# am_al_60norm <- am_al_60 - am_back_60 - sc_background
+# ggplot(am_al_60norm, aes(x = nums, y = counts60)) +
+#   geom_point()+   geom_smooth()+
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #90 degrees
+# am_al_90norm <- am_al_90 - am_back_90 - sc_background
+# ggplot(am_al_90norm, aes(x = nums, y = counts90)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# 
+# #120 degrees
+# am_al_120norm <- am_al_120 - am_back_120 - sc_background
+# ggplot(am_al_120norm, aes(x = nums, y = counts120)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# 
+# #150 degrees
+# am_al_150norm <- am_al_150 - am_back_150 - sc_background
+# ggplot(am_al_150norm, aes(x = nums, y = counts150)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+for (i in 1:6){
+ norm <- am_al$source[[i]] - am_al$background[[i]]
+dog <-tibble(nums = seq(1,1024,1)*2.08, norm ) %>% 
+ggplot(aes(x = nums, y = norm)) +
+geom_point() + 
+theme_classic() +
+theme(aspect.ratio=1) +
+geom_vline(xintercept = am_al$exp_shift[i]*2.08*10/945, color = 'blue', alpha = .5) +
+xlim((am_al$exp_shift[i] - 50)*2.08*10/945, (am_al$exp_shift[i] + 50)*2.08*10/945) +
+labs(title = 'Compton Shift of Americium Source',
+       subtitle = 'Using aluminum target at 150 degrees',
+       y = 'Counts per second',
+       x = 'Wavelength (pm)') 
+
+  
+print(dog)
+}
+
+```
+
+```{r am_c_compton_shift}
+nums <- seq(1,1024,1)
+
+
+am_c <- tibble(source = c(am_c_10,am_c_30,am_c_60,am_c_90,am_c_120,am_c_150), 
+                background = c(am_back_10 + sc_background, am_back_30 + sc_background, am_back_90 + sc_background,
+                               am_back_90 + sc_background, am_back_120 + sc_background, am_back_150 + sc_background),
+                exp_shift = c(943.3257	,930.4369,892.8458	,846.1472,804.0908	, 775.8608	))
+
+
+ for (i in 1:6){
+ norm <- am_c$source[[i]] - am_c$background[[i]]
+dog <-tibble(nums = seq(1,1024,1)*2.08*10/945, norm ) %>% 
+ggplot(aes(x = nums, y = norm)) +
+geom_point() + 
+theme_classic() +
+theme(aspect.ratio=1) +
+geom_vline(xintercept = am_al$exp_shift[i]*2.08*10/945, color = 'blue', alpha = .5) +
+xlim((am_al$exp_shift[i] - 50)*2.08*10/945, (am_al$exp_shift[i] + 50)*2.08*10/945) +
+labs(title = 'Compton Shift of Americium Source',
+       subtitle = 'Using carbon target at 120 degrees',
+       y = 'Counts per second',
+       x = 'Wavelength (pm)') 
+  
+print(dog)
+ }
+
+# 
+# #10 degrees
+# am_c_10norm <- am_c_10 - am_back_10 - sc_background
+# ggplot(am_c_10norm, aes(x = nums, y = counts10)) +
+#   geom_point() + 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #30 degrees
+# am_c_30norm <- am_c_30 - am_back_30 - sc_background
+# ggplot(am_c_30norm, aes(x = nums, y = counts30)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #60 degrees
+# am_c_60norm <- am_c_60 - am_back_60 - sc_background
+# ggplot(am_c_60norm, aes(x = nums, y = counts60)) +
+#   geom_point()+   geom_smooth()+
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# #90 degrees
+# am_c_90norm <- am_c_90 - am_back_90 - sc_background
+# ggplot(am_c_90norm, aes(x = nums, y = counts90)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# 
+# #120 degrees
+# am_c_120norm <- am_c_120 - am_back_120 - sc_background
+# ggplot(am_c_120norm, aes(x = nums, y = counts120)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+# 
+# 
+# #150 degrees
+# am_c_150norm <- am_c_150 - am_back_150 - sc_background
+# ggplot(am_c_150norm, aes(x = nums, y = counts150)) +
+#   geom_point()+ 
+#   scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+```
+
+```{r am_ag_compton_shift}
+nums <- seq(1,1024,1)
+
+#10 degrees
+am_ag_10norm <- am_ag_10 - am_back_10 - sc_background
+ggplot(am_ag_10norm, aes(x = nums, y = counts10)) +
+  geom_point() + 
+  scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+#30 degrees
+am_ag_30norm <- am_ag_30 - am_back_30 - sc_background
+ggplot(am_ag_30norm, aes(x = nums, y = counts30)) +
+  geom_point()+ 
+  scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+#60 degrees
+am_ag_60norm <- am_ag_60 - am_back_60 - sc_background
+ggplot(am_ag_60norm, aes(x = nums, y = counts60)) +
+  geom_point()+   geom_smooth()+
+  scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+#90 degrees
+am_ag_90norm <- am_ag_90 - am_back_90 - sc_background
+ggplot(am_ag_90norm, aes(x = nums, y = counts90)) +
+  geom_point()+ 
+  scale_x_discrete(limits = seq(from = 0, to = 1000, by = 50))
+
+
+```
+```{r better klein nishina cs_cu}
+cs_cu_30norm <- cs_cu_30 - cs_back_30 - sc_background
+nums <- seq(1,1024,1)
+dog <- tibble(counts30 = cs_cu_30norm$counts30, nums)
+fit <- nls(counts30 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 735, sd = 35, a = 1e8))
+summary(fit)
+plot(counts30 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 600, to = 900, add = TRUE)
+
+cs_cu_60norm <- cs_cu_60 - cs_back_60 - sc_background
+nums <- seq(1,1024,1)
+dog <- tibble(counts60 = cs_cu_60norm$counts60, nums)
+fit <- nls(counts60 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 517, sd = 35, a = 1e8))
+summary(fit)
+plot(counts60 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 400, to = 600, add = TRUE)
+
+cs_cu_90norm <- cs_cu_90 - cs_back_90 - sc_background
+nums <- seq(301,1024,1)
+dog <- tibble(counts90 = cs_cu_90norm$counts90 %>% tail(1024-300), nums)
+fit <- nls(counts90 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 410, sd = 35, a = 1e8))
+summary(fit)
+plot(counts90 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 300, to = 500, add = TRUE)
+
+
+ cs_cu_120norm <- cs_cu_120 - cs_back_120 - sc_background
+ nums <- seq(251,1024,1)
+ dog <- tibble(counts120 = cs_cu_120norm$counts120 %>% tail(1024-250), nums)
+ fit <- nls(counts120 ~ a * dnorm(nums, mean, sd), data = dog, 
+          start = list(mean = 310, sd = 35, a = 1e8))
+summary(fit)
+plot(counts120 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 200, to = 400, add = TRUE)
+
+cs_cu_150norm <- cs_cu_150 - cs_back_150 - sc_background
+nums <- seq(1,1024,1)
+dog <- tibble(counts150 = cs_cu_150norm$counts150, nums)
+fit <- nls(counts150 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 270, sd = 35, a = 1e8))
+summary(fit)
+plot(counts150 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 200, to = 400, add = TRUE)
+
+    
+    
+  peaks_cs_cu <- tibble(peaks = c(33.067      , 24.864      , 23.0438     , 25.2558     , 37.717      ), angles = seq(30, 150, 30),
+                  error = c(1.701   ,1.207   ,0.5784   ,0.8309   ,1.157   ))
+  
+    peaks_cs_cu %>% ggplot(aes(x = angles, y = peaks)) +
+      geom_point() +
+     geom_line() +
+    geom_errorbar(aes(ymin = peaks - error, ymax = peaks + error),width=1, color = 'blue')
+    scale_x_discrete(limits = seq(30,150,30))
+
+    
+
+
+  # peak30 <- sum(cs_cu_30norm$counts30[(735.62 - 36.34):(735.62 + 36.34)])
+  # peak60 <- sum(cs_cu_60norm$counts60[(548.64 - 44.73):(548.64 + 44.73)])
+  # peak90 <- sum(cs_cu_90norm$counts90[(399.70 - 27.74):(399.70 + 27.74)])
+  # peak120 <- sum(cs_cu_120norm$counts120[(311.74 - 31.34):(311.74 + 31.34)])
+  # peak150 <- sum(cs_cu_150norm$counts150[(264.26 - 35.79):(264.26 + 35.79)])
+  # 
+  # peaks <- tibble(peaks = c(peak30, peak60, peak90, peak120, peak150), angles = seq(30, 150, 30),
+  #                 error = c(1.701   ,1.207   ,0.5784   ,0.8309   ,1.157   ))
+  # 
+  # peaks %>% ggplot(aes(x = angles, y = peaks)) +
+  #    geom_point() +
+  #    geom_line() +
+  #   geom_errorbar(aes(ymin = peaks - error/2, ymax = peaks + error/2),width=1, color = 'blue')
+  #   scale_x_discrete(limits = seq(30,150,30))
+
+
+```
+```{r better klein nishina am_al}
+am_al_10norm <- am_al_10 - am_back_10 - sc_background
+nums <- seq(925,1024,1)
+dog <- tibble(counts10 = am_al_10norm$counts10 %>% tail(100), nums)
+fit <- nls(counts10 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 950, sd = 5, a = 1e8))
+summary(fit)
+plot(counts10 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 925, to = 975, add = TRUE)
+
+am_al_30norm <- am_al_30 - am_back_30 - sc_background
+nums <- seq(875,1024,1)
+dog <- tibble(counts30 = am_al_30norm$counts30 %>% tail(150), nums)
+fit <- nls(counts30 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 930, sd = 5, a = 1e8))
+summary(fit)
+plot(counts30 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 900, to = 950, add = TRUE)
+
+am_al_60norm <- am_al_60 - am_back_60 - sc_background
+nums <- seq(825,1024,1)
+dog <- tibble(counts60 = am_al_60norm$counts60 %>% tail(200), nums)
+fit <- nls(counts60 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 900, sd = 5, a = 1e8))
+summary(fit)
+plot(counts60 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 875, to = 925, add = TRUE)
+
+am_al_90norm <- am_al_90 - am_back_90 - sc_background
+nums <- seq(1,1024,1)
+dog <- tibble(counts90 = am_al_90norm$counts90, nums)
+fit <- nls(counts90 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 850, sd = 5, a = 1e8))
+summary(fit)
+plot(counts90 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 825, to = 875, add = TRUE)
+
+am_al_120norm <- am_al_120 - am_back_120 - sc_background
+nums <- seq(725,1024,1)
+dog <- tibble(counts120 = am_al_120norm$counts120 %>% tail(300), nums)
+fit <- nls(counts120 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 810, sd = 5, a = 1e8))
+summary(fit)
+plot(counts120 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 775, to = 825, add = TRUE)
+
+am_al_150norm <- am_al_150 - am_back_150 - sc_background
+nums <- seq(675,1024,1)
+dog <- tibble(counts150 = am_al_150norm$counts150 %>% tail(350), nums)
+fit <- nls(counts150 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 775, sd = 5, a = 1e8))
+summary(fit)
+plot(counts150 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 750, to = 800, add = TRUE)
+
+    
+    
+   peaks_am_al <- tibble(peaks = c(3.79110,0.70439,0.50269,7.346e-03, 0.16378 ,0.30945), angles = c(10,seq(30, 150, 30)),
+                   error = c(0.06248,0.04425,0.02733,7.540e-03, 0.02199, 0.02498))
+   
+     peaks_am_al %>% ggplot(aes(x = angles, y = peaks)) +
+     geom_point() +
+     geom_line() +
+     geom_errorbar(aes(ymin = peaks - error, ymax = peaks + error),width=1, color = 'blue') 
+```
+
+
+    
+
+
+```{r better klein nishina am_c}
+am_c_10norm <- am_c_10 - am_back_10 - sc_background
+nums <- seq(925,1024,1)
+dog <- tibble(counts10 = am_c_10norm$counts10 %>% tail(100), nums)
+fit <- nls(counts10 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 950, sd = 5, a = 1e8))
+summary(fit)
+plot(counts10 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 925, to = 975, add = TRUE)
+
+am_c_30norm <- am_c_30 - am_back_30 - sc_background
+nums <- seq(875,1024,1)
+dog <- tibble(counts30 = am_c_30norm$counts30 %>% tail(150), nums)
+fit <- nls(counts30 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 930, sd = 5, a = 1e8))
+summary(fit)
+plot(counts30 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 900, to = 950, add = TRUE)
+
+am_c_60norm <- am_c_60 - am_back_60 - sc_background
+nums <- seq(825,1024,1)
+dog <- tibble(counts60 = am_c_60norm$counts60 %>% tail(200), nums)
+fit <- nls(counts60 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 900, sd = 5, a = 1e8))
+summary(fit)
+plot(counts60 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 875, to = 925, add = TRUE)
+
+am_c_90norm <- am_c_90 - am_back_90 - sc_background
+nums <- seq(1,1024,1)
+dog <- tibble(counts90 = am_c_90norm$counts90, nums)
+fit <- nls(counts90 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 850, sd = 5, a = 1e8))
+summary(fit)
+plot(counts90 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 825, to = 875, add = TRUE)
+
+am_c_120norm <- am_c_120 - am_back_120 - sc_background
+nums <- seq(725,1024,1)
+dog <- tibble(counts120 = am_c_120norm$counts120 %>% tail(300), nums)
+fit <- nls(counts120 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 810, sd = 5, a = 1e8))
+summary(fit)
+plot(counts120 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 775, to = 825, add = TRUE)
+
+am_c_150norm <- am_c_150 - am_back_150 - sc_background
+nums <- seq(675,1024,1)
+dog <- tibble(counts150 = am_c_150norm$counts150 %>% tail(350), nums)
+fit <- nls(counts150 ~ a * dnorm(nums, mean, sd), data = dog, 
+         start = list(mean = 775, sd = 5, a = 1e8))
+summary(fit)
+plot(counts150 ~ nums, data = dog)
+curve(predict(fit, newdata = data.frame(nums = x)), from = 750, to = 800, add = TRUE)
+
+peaks_am_c <- tibble(peaks = c(6.40528    ,2.95793    ,1.89396    ,1.45663    , 1.78482     ,2.59172    ), angles = c(10,seq(30, 150, 30)),
+                   error = c(0.09169    ,0.07176   ,0.04309   ,0.02887   , 0.04108   , 0.04796   ))
+   
+     peaks_am_c %>% ggplot(aes(x = angles, y = peaks)) +
+     geom_point() +
+     geom_line() +
+     geom_errorbar(aes(ymin = peaks - error, ymax = peaks + error),width=1, color = 'blue') 
+
+```
+```{r klein_nishina_cs}
+theta <- pi/4
+lambda_in <- 1.87*10^-3
+lambda_c <- .00243
+
+lambda_ratio <- function(theta){lambda_in/(lambda_c*(1-cos(theta)) + lambda_in)}
+
+
+kn <- function(theta, lambda_r){(.5*79.406*lambda_r^2*(lambda_r+lambda_r^-1 - (sin(theta))^2))*10^3}
+
+print(lambda_ratio(pi/4))
+print(kn(0, lambda_ratio(0)))
+  
+print('mbarns')
+
+
+data <- tibble(tangles = seq(0, pi, pi/8), kn = kn(tangles, lambda_ratio(tangles)))
+
+data
+ggplot(data, aes(x = tangles*180/pi, y = kn*.00285)) +
+  geom_point() + 
+  geom_line() +
+  labs(x = 'angle (degrees)', y = 'klein-nishina result (mbarns)') +
+  theme_bw() +
+  scale_x_discrete(limits = seq(0, 360, 30))
+
+
+  peaks_cs_cu <- tibble(peaks = c(33.067, 24.864, 23.0438, 25.2558, 37.717), angles = seq(30, 150, 30),
+                  error = c(1.701,1.207,0.5784,0.8309,1.157),
+                  kn_angle = data$tangles*180/pi)
+  peaks_cs_cu
+  
+    peaks_cs_cu %>% ggplot(aes(x = angles, y = peaks)) +
+      geom_point() +
+     geom_line() +
+    geom_errorbar(aes(ymin = peaks - error, ymax = peaks + error),width=1, color = 'blue')
+    scale_x_discrete(limits = seq(30,150,30))
+
+
+```

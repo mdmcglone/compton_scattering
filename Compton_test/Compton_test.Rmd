@@ -1,0 +1,116 @@
+---
+title: "compton_test"
+author: "me"
+date: "10/12/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r compton_eq_cs}
+theta <- pi/4
+lambda_in <-  1.87*10^-3 #nm
+lambda_c <- .00243 #nm
+
+lambda_ratio <- function(theta){lambda_in/(lambda_c*(1-cos(theta)) + lambda_in)}
+lambda_shift <- function(theta){(lambda_c*(1-cos(theta)))}
+lambda_out <- function(theta){(lambda_c*(1-cos(theta))+lambda_in)}
+
+
+
+compton_ratio <- tibble(angles = seq(0,2*pi,pi/18), wavelength_ratio = lambda_ratio(angles)*853)
+compton_shift <- tibble(angles = seq(0,2*pi,pi/18), wavelength_shift = lambda_shift(angles))
+compton_out <- tibble(angles = seq(0,2*pi,pi/18), wavelength_out = lambda_out(angles))
+
+compton_ratio
+compton_shift
+compton_out
+
+#max marker at 853
+
+```
+
+
+```{r compton_eq_am}
+theta <- pi/4
+lambda_in <-  2.08*10^-2 #nm
+lambda_c <- .00243 #nm
+
+lambda_ratio <- function(theta){lambda_in/(lambda_c*(1-cos(theta)) + lambda_in)}
+lambda_shift <- function(theta){(lambda_c*(1-cos(theta)))}
+lambda_out <- function(theta){(lambda_c*(1-cos(theta))+lambda_in)}
+
+
+
+compton_ratio <- tibble(angles = seq(0,2*pi,pi/18), wavelength_ratio = lambda_ratio(angles)*945)
+compton_shift <- tibble(angles = seq(0,2*pi,pi/18), wavelength_shift = lambda_shift(angles))
+compton_out <- tibble(angles = seq(0,2*pi,pi/18), wavelength_out = lambda_out(angles))
+
+compton_ratio
+compton_shift
+compton_out
+
+#max marker at 945
+
+```
+
+```{r klein_nashina_eq_cs}
+theta <- pi/4
+lambda_in <- 1.87*10^-3
+lambda_c <- .00243
+
+lambda_ratio <- function(theta){lambda_in/(lambda_c*(1-cos(theta)) + lambda_in)}
+
+
+kn <- function(theta, lambda_r){(.5*79.406*lambda_r^2*(lambda_r+lambda_r^-1 - (sin(theta))^2))*10^3}
+
+print(lambda_ratio(pi/4))
+print(kn(0, lambda_ratio(0)))
+  
+print('mbarns')
+
+
+data <- tibble(tangles = seq(0, pi, pi/8), kn = kn(tangles, lambda_ratio(tangles)))
+
+data
+ggplot(data, aes(x = tangles*180/pi, y = kn*.00285)) +
+  geom_point() + 
+  geom_line() +
+  labs(x = 'angle (degrees)', y = 'klein-nishina result (mbarns)') +
+  theme_bw() +
+  scale_x_discrete(limits = seq(0, 360, 30))
+
+```
+
+
+
+```{r klein_nashina_eq_am}
+theta <- pi/4
+lambda_in <- 2.08*10^-2
+lambda_c <- .00243
+
+lambda_ratio <- function(theta){lambda_in/(lambda_c*(1-cos(theta)) + lambda_in)}
+
+
+kn <- function(theta, lambda_r){(.5*79.406*lambda_r^2*(lambda_r+lambda_r^-1 - (sin(theta))^2))*10^3}
+
+print(lambda_ratio(pi/4))
+print(kn(0, lambda_ratio(0)))
+  
+print('mbarns')
+
+
+data <- tibble(tangles = seq(0, pi, pi/18), kn = kn(tangles, lambda_ratio(tangles)))
+
+data
+ggplot(data, aes(x = tangles*180/pi, y = kn*.000717)) +
+  geom_point() + 
+  geom_line() +
+  labs(x = 'angle (degrees)', y = 'klein-nishina result (mbarns)') +
+  theme_bw() +
+  scale_x_discrete(limits = seq(0, 360, 30))
+
+```
